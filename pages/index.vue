@@ -44,20 +44,20 @@
             >
         </div>
         <div class="control-buttons">
-            <button class="control-button" @click="setDir({ keyCode: 38 })">
-                <a-icon type="up" />
+            <button class="right-left-button" style="padding-left: 40px;" @click="setDir({ keyCode: 37 })">
+                <a-icon class="icons" type="left" />
             </button>
             <div class="lower-buttons">
-                <button class="control-button" @click="setDir({ keyCode: 37 })">
-                    <a-icon type="left" />
+                <button class="up-down-button" style="padding-bottom: 20px;" @click="setDir({ keyCode: 38 })">
+                    <a-icon class="icons" type="up" />
                 </button>
-                <button class="control-button" @click="setDir({ keyCode: 40 })">
-                    <a-icon type="down" />
-                </button>
-                <button class="control-button" @click="setDir({ keyCode: 39 })">
-                    <a-icon type="right" />
+                <button class="up-down-button" style="padding-top: 20px;" @click="setDir({ keyCode: 40 })">
+                    <a-icon class="icons" type="down" />
                 </button>
             </div>
+            <button class="right-left-button" style="padding-right: 40px;" @click="setDir({ keyCode: 39 })">
+                <a-icon class="icons" type="right" />
+            </button>
         </div>
     </div>
 </template>
@@ -279,22 +279,38 @@ export default {
 
     .control-buttons {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
         padding: 20px;
     }
 
     .lower-buttons {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
     }
 
-    .control-button {
+    .icons {
+        font-size: 18px;
+        color: #717171;
+    }
+
+    .up-down-button {
         width: 70px;
-        height: 70px;
-        margin: 5px;
+        height: 80px;
+        margin: 2px;
         cursor: pointer;
         border-radius: 4px;
-        border: 1px solid #7d7d7d;
+        border: 1px solid #d9d9d9;
+        background-color: #fcfcfc;
     }
+    .right-left-button {
+        width: 80px;
+        height: 70px;
+        margin: 2px;
+        cursor: pointer;
+        border-radius: 4px;
+        border: 1px solid #d9d9d9;
+        background-color: #fcfcfc;
+    }
+
 </style>
