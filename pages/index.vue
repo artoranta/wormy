@@ -335,8 +335,8 @@ export default {
     .lower-buttons {
         display: flex;
         flex-direction: column;
-        margin-left: -40px;
-        margin-right: -40px;
+        margin-left: -73px;
+        margin-right: -73px;
     }
 
     .icons {
@@ -346,14 +346,14 @@ export default {
     }
 
     .up-down-button {
-        width: 80px;
+        width: 150px;
         height: 100px;
         margin: -1px;
         cursor: pointer;
         border-radius: 4px;
         border: 1px solid #e8e8e8;
         background-color: #e8e8e8;
-        clip-path: polygon(0% 0, 100% 0, 100% 60px, 50% 100%, 0 60px);
+        clip-path: polygon(0% 0, 100% 0, 100% 25px, 50% 100%, 0 25px);
     }
 
     .up-down-button:before {
@@ -365,18 +365,18 @@ export default {
         right: 1px;
         bottom: 1px;
         background-color: #fcfcfc;
-        clip-path: polygon(0% 0, 100% 0, 100% 58px, 50% 100%, 0 58px);
+        clip-path: polygon(0% 0, 100% 0, 100% 23px, 50% 100%, 0 23px);
     }
 
     .right-left-button {
         width: 100px;
-        height: 80px;
+        height: 150px;
         margin: -1px;
         cursor: pointer;
         border-radius: 4px;
         border: 1px solid #e8e8e8;
         background-color: #e8e8e8;
-        clip-path: polygon(0% 0, 60px 0, 100% 50%, 60px 100%, 0 100%);
+        clip-path: polygon(0% 0, 25px 0, 100% 50%, 25px 100%, 0 100%);
     }
 
     .right-left-button:before {
@@ -388,7 +388,7 @@ export default {
         right: 1px;
         bottom: 1px;
         background-color: #fcfcfc;
-        clip-path: polygon(0% 0, 58px 0, 100% 50%, 58px 100%, 0 100%);
+        clip-path: polygon(0% 0, 23px 0, 100% 50%, 23px 100%, 0 100%);
     }
 
     .rotate-180 {
