@@ -28,12 +28,23 @@
         </div>
         <div class="grid">
             <div v-for="y in grid" :key="y[0].join('.')" class="row">
+                <div v-for="xy in y" :key="xy.join('.')" class="tile" />
+            </div>
+            <!--<div v-for="y in grid" :key="y[0].join('.')" class="row">
                 <div v-for="xy in y" :key="xy.join('.')" class="tile">
                     <a-icon v-if="head.join('.') === xy.join('.')" class="worm-eyes" type="pause" />
                     <div v-if="worm.map(wxy => wxy.join('.')).includes(xy.join('.'))" class="worm" />
                     <div v-if="apple.join('.') === xy.join('.')" class="apple" />
                 </div>
-            </div>
+            </div>-->
+            <canvas
+                id="myCanvas"
+                width="360px"
+                height="360px"
+                style="position: absolute;"
+            >
+                Your browser does not support the canvas element.
+            </canvas>
             <input
                 ref="controlInput"
                 class="control-input"
@@ -98,11 +109,23 @@ export default {
             return this.worm.length
         }
     },
+    watch: {
+        apple (val) {
+            this.fullName = val + ' ' + this.lastName
+        }
+    },
     mounted () {
         this.focusInput()
+        const c = document.getElementById('myCanvas')
+        const ctx = c.getContext('2d')
+        this.vueCanvas = ctx
     },
     created () {
-        this.move()
+        // this.move()
+        this.$nextTick(() => {
+            this.updateCanvas()
+            this.move()
+        })
     },
     methods: {
         move () {
@@ -150,10 +173,26 @@ export default {
                 if (Math.abs(this.dir - this.nextDir) !== 2) {
                     this.dir = this.nextDir
                 }
+                this.updateCanvas()
             }, 1000 / this.speed)
         },
         focusInput () {
             this.$refs.controlInput.focus()
+        },
+        updateCanvas () {
+            // clear canvas
+            this.vueCanvas.clearRect(0, 0, 360, 360)
+
+            this.worm.forEach(([y, x]) => {
+                this.vueCanvas.beginPath()
+                this.vueCanvas.fillStyle = '#22a417'
+                this.vueCanvas.fillRect(x * 36, y * 36, 36, 36)
+                this.vueCanvas.stroke()
+            })
+            this.vueCanvas.beginPath()
+            this.vueCanvas.fillStyle = '#cb2724'
+            this.vueCanvas.fillRect(this.apple[1] * 36, this.apple[0] * 36, 36, 36)
+            this.vueCanvas.stroke()
         },
         setDir ({ keyCode }) {
             if ((keyCode < 37 && keyCode > 40) || this.state === 2) {
