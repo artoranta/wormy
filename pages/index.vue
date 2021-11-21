@@ -44,19 +44,19 @@
             >
         </div>
         <div class="control-buttons">
-            <button class="right-left-button" style="padding-left: 40px;" @click="setDir({ keyCode: 37 })">
+            <button class="rotate-360 right-left-button" style="padding-right: 30px;" @click="setDir({ keyCode: 37 })">
                 <a-icon class="icons" type="left" />
             </button>
             <div class="lower-buttons">
-                <button class="up-down-button" style="padding-bottom: 20px;" @click="setDir({ keyCode: 38 })">
+                <button class="rotate-360 up-down-button" style="padding-bottom: 30px;" @click="setDir({ keyCode: 38 })">
                     <a-icon class="icons" type="up" />
                 </button>
-                <button class="up-down-button" style="padding-top: 20px;" @click="setDir({ keyCode: 40 })">
-                    <a-icon class="icons" type="down" />
+                <button class="rotate-180 up-down-button" style="padding-bottom: 30px;" @click="setDir({ keyCode: 40 })">
+                    <a-icon class="icons" type="up" />
                 </button>
             </div>
-            <button class="right-left-button" style="padding-right: 40px;" @click="setDir({ keyCode: 39 })">
-                <a-icon class="icons" type="right" />
+            <button class="rotate-180 right-left-button" style="padding-right: 30px;" @click="setDir({ keyCode: 39 })">
+                <a-icon class="icons" type="left" />
             </button>
         </div>
     </div>
@@ -185,7 +185,7 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
     .grid-container {
         position: relative;
         display: flex;
@@ -287,30 +287,68 @@ export default {
     .lower-buttons {
         display: flex;
         flex-direction: column;
+        margin-left: -40px;
+        margin-right: -40px;
     }
 
     .icons {
         font-size: 18px;
         color: #717171;
+        z-index: 100;
     }
 
     .up-down-button {
-        width: 70px;
-        height: 80px;
-        margin: 2px;
-        cursor: pointer;
-        border-radius: 4px;
-        border: 1px solid #d9d9d9;
-        background-color: #fcfcfc;
-    }
-    .right-left-button {
         width: 80px;
-        height: 70px;
-        margin: 2px;
+        height: 100px;
+        margin: -1px;
         cursor: pointer;
         border-radius: 4px;
         border: 1px solid #d9d9d9;
+        background-color: #d9d9d9;
+        clip-path: polygon(0% 0, 100% 0, 100% 60px, 50% 100%, 0 60px);
+    }
+
+    .up-down-button:before {
+        content: " ";
+        position: absolute;
+        z-index: -1;
+        top: 1px;
+        left: 1px;
+        right: 1px;
+        bottom: 1px;
         background-color: #fcfcfc;
+        clip-path: polygon(0% 0, 100% 0, 100% 58px, 50% 100%, 0 58px);
+    }
+
+    .right-left-button {
+        width: 100px;
+        height: 80px;
+        margin: -1px;
+        cursor: pointer;
+        border-radius: 4px;
+        border: 1px solid #d9d9d9;
+        background-color: #d9d9d9;
+        clip-path: polygon(0% 0, 60px 0, 100% 50%, 60px 100%, 0 100%);
+    }
+
+    .right-left-button:before {
+        content: " ";
+        position: absolute;
+        z-index: -1;
+        top: 1px;
+        left: 1px;
+        right: 1px;
+        bottom: 1px;
+        background-color: #fcfcfc;
+        clip-path: polygon(0% 0, 58px 0, 100% 50%, 58px 100%, 0 100%);
+    }
+
+    .rotate-180 {
+        transform: rotate(180deg)
+    }
+
+    .rotate-360 {
+        transform: rotate(360deg)
     }
 
 </style>
