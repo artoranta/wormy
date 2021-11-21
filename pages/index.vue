@@ -180,19 +180,25 @@ export default {
             this.$refs.controlInput.focus()
         },
         updateCanvas () {
-            // clear canvas
             this.vueCanvas.clearRect(0, 0, 360, 360)
 
             this.worm.forEach(([y, x]) => {
                 this.vueCanvas.beginPath()
                 this.vueCanvas.fillStyle = '#22a417'
                 this.vueCanvas.fillRect(x * 36, y * 36, 36, 36)
-                this.vueCanvas.stroke()
+                if (x === this.head[1] && y === this.head[0]) {
+                    this.vueCanvas.beginPath()
+                    this.vueCanvas.fillStyle = '#b3d9aa'
+                    this.vueCanvas.fillRect(x * 36 + 13, y * 36 + 6, 2, 10)
+                    this.vueCanvas.beginPath()
+                    this.vueCanvas.fillStyle = '#b3d9aa'
+                    this.vueCanvas.fillRect(x * 36 + 21, y * 36 + 6, 2, 10)
+                }
             })
+
             this.vueCanvas.beginPath()
             this.vueCanvas.fillStyle = '#cb2724'
             this.vueCanvas.fillRect(this.apple[1] * 36, this.apple[0] * 36, 36, 36)
-            this.vueCanvas.stroke()
         },
         setDir ({ keyCode }) {
             if ((keyCode < 37 && keyCode > 40) || this.state === 2) {
@@ -216,9 +222,12 @@ export default {
         restart () {
             this.state = 0
             this.score = 0
+            this.lastDir = 1
             this.dir = 1
+            this.nextDir = 1
             this.worm = Array(3).fill().map((_u, n) => [5, n])
             this.apple = [5, 5]
+            this.updateCanvas()
         }
     }
 }
