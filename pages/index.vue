@@ -303,8 +303,8 @@ export default {
         margin: -1px;
         cursor: pointer;
         border-radius: 4px;
-        border: 1px solid #d9d9d9;
-        background-color: #d9d9d9;
+        border: 1px solid #e8e8e8;
+        background-color: #e8e8e8;
         clip-path: polygon(0% 0, 100% 0, 100% 60px, 50% 100%, 0 60px);
     }
 
@@ -326,8 +326,8 @@ export default {
         margin: -1px;
         cursor: pointer;
         border-radius: 4px;
-        border: 1px solid #d9d9d9;
-        background-color: #d9d9d9;
+        border: 1px solid #e8e8e8;
+        background-color: #e8e8e8;
         clip-path: polygon(0% 0, 60px 0, 100% 50%, 60px 100%, 0 100%);
     }
 
