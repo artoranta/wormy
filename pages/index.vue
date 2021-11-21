@@ -27,8 +27,8 @@
             </a-radio-group>
         </div>
         <div class="grid">
-            <div v-for="y in grid" :key="y[0].join('.')" class="row">
-                <div v-for="xy in y" :key="xy.join('.')" class="tile" />
+            <div v-for="x in 10" :key="x" class="row">
+                <div v-for="y in 10" :key="y" class="tile" />
             </div>
             <!--<div v-for="y in grid" :key="y[0].join('.')" class="row">
                 <div v-for="xy in y" :key="xy.join('.')" class="tile">
