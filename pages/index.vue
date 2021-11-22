@@ -82,14 +82,16 @@
 </template>
 
 <script>
+const namespace = 'wormy.dev'
+const size = 10
+
 export default {
     layout: 'default',
     data () {
         return {
-            size: 10,
-            grid: Array(10)
+            grid: Array(size)
                 .fill()
-                .map((_u, y) => Array(10)
+                .map((_u, y) => Array(size)
                     .fill()
                     .map((_u, x) => [y, x])),
             worm: Array(3).fill().map((_u, n) => [5, n]),
@@ -124,7 +126,7 @@ export default {
         },
         state (value) {
             if (value === 1) {
-                this.updateCount('games')
+                this.count('games')
             }
         }
     },
@@ -136,8 +138,9 @@ export default {
     },
     created () {
         this.$nextTick(() => {
+            this.count('games', 'get')
+            this.count('visits')
             this.updateCanvas()
-            this.updateCount('visits')
             Object.keys(this.icons).forEach(s => this.getHighscore(s))
             this.start()
         })
@@ -153,24 +156,24 @@ export default {
                 switch (this.dir) {
                 case 0:
                     this.lastDir = 0
-                    next = [this.head[0], (this.head[1] + (this.size - 1)) % this.size]
+                    next = [this.head[0], (this.head[1] + (size - 1)) % size]
                     break
                 case 1:
                     this.lastDir = 1
-                    next = [(this.head[0] + (this.size - 1)) % this.size, this.head[1]]
+                    next = [(this.head[0] + (size - 1)) % size, this.head[1]]
                     break
                 case 2:
                     this.lastDir = 2
-                    next = [this.head[0], (this.head[1] + 1) % this.size]
+                    next = [this.head[0], (this.head[1] + 1) % size]
                     break
                 case 3:
                     this.lastDir = 3
-                    next = [(this.head[0] + 1) % this.size, this.head[1]]
+                    next = [(this.head[0] + 1) % size, this.head[1]]
                     break
                 default:
-                    next = [this.head[0], (this.head[1] + 1) % this.size]
+                    next = [this.head[0], (this.head[1] + 1) % size]
                 }
-                if (this.worm.map(wxy => wxy.join('.')).slice(1).includes(next.join('.')) || this.length === this.size * this.size) {
+                if (this.worm.map(wxy => wxy.join('.')).slice(1).includes(next.join('.')) || this.length === size * size) {
                     this.state = 2
                     this.saveScore(this.speed, this.score)
                 } else {
@@ -195,9 +198,9 @@ export default {
                 }
             }, 1000 / this.speed)
         },
-        updateCount (key) {
+        count (key, endpoint = 'hit') {
             const xhr = new XMLHttpRequest()
-            xhr.open('GET', `https://api.countapi.xyz/hit/wormy.dev/${key}`)
+            xhr.open('GET', `https://api.countapi.xyz/${endpoint}/${namespace}/${key}`)
             xhr.responseType = 'json'
             xhr.onload = ({ target }) => {
                 const value = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : 0
@@ -208,10 +211,10 @@ export default {
         getHighscore (speed) {
             const xhr = new XMLHttpRequest()
             const key = `highscore-${speed}`
-            xhr.open('GET', `https://api.countapi.xyz/get/wormy.dev/${key}`)
+            xhr.open('GET', `https://api.countapi.xyz/get/${namespace}/${key}`)
             xhr.responseType = 'json'
             xhr.onload = ({ target }) => {
-                const value = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : null
+                const value = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : 0
                 this.$set(this.storage, key, value)
                 if (!this.storage[key] && this.storage[key] !== 0) {
                     this.create(key)
@@ -224,10 +227,10 @@ export default {
             const currentValue = this.storage[key] || 0
             if (score > currentValue) {
                 const xhr = new XMLHttpRequest()
-                xhr.open('GET', `https://api.countapi.xyz/set/wormy.dev/${key}?value=${score}`)
+                xhr.open('GET', `https://api.countapi.xyz/set/${namespace}/${key}?value=${score}`)
                 xhr.responseType = 'json'
                 xhr.onload = ({ target }) => {
-                    const value = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : null
+                    const value = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : 0
                     this.$set(this.storage, key, value)
                 }
                 xhr.send()
@@ -235,7 +238,7 @@ export default {
         },
         create (key) {
             const xhr = new XMLHttpRequest()
-            xhr.open('GET', `https://api.countapi.xyz/create?namespace=wormy.dev&key=${key}&value=0&enable_reset=1`)
+            xhr.open('GET', `https://api.countapi.xyz/create?namespace=${namespace}&key=${key}&value=0&enable_reset=1`)
             xhr.responseType = 'json'
             xhr.onload = ({ target }) => {
                 console.log(target.response)
@@ -290,7 +293,7 @@ export default {
             }
         },
         generate () {
-            return [Math.floor(Math.random() * this.size), Math.floor(Math.random() * this.size)]
+            return [Math.floor(Math.random() * size), Math.floor(Math.random() * size)]
         },
         restart () {
             this.state = 0
