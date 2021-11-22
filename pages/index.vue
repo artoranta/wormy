@@ -121,6 +121,11 @@ export default {
     watch: {
         apple () {
             this.addPart(this.apple, '#cb2724')
+        },
+        state (value) {
+            if (value === 1) {
+                this.updateCount('games')
+            }
         }
     },
     mounted () {
@@ -135,7 +140,6 @@ export default {
             this.updateCount('visits')
             Object.keys(this.icons).forEach(s => this.getHighscore(s))
             this.start()
-            this.updateCount('games')
         })
     },
     methods: {
@@ -196,7 +200,8 @@ export default {
             xhr.open('GET', `https://api.countapi.xyz/hit/wormy.dev/${key}`)
             xhr.responseType = 'json'
             xhr.onload = ({ target }) => {
-                this.storage[key] = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : 0
+                const value = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : 0
+                this.$set(this.storage, key, value)
             }
             xhr.send()
         },
@@ -206,7 +211,8 @@ export default {
             xhr.open('GET', `https://api.countapi.xyz/get/wormy.dev/${key}`)
             xhr.responseType = 'json'
             xhr.onload = ({ target }) => {
-                this.storage[key] = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : null
+                const value = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : null
+                this.$set(this.storage, key, value)
                 if (!this.storage[key] && this.storage[key] !== 0) {
                     this.create(key)
                 }
@@ -221,7 +227,8 @@ export default {
                 xhr.open('GET', `https://api.countapi.xyz/set/wormy.dev/${key}?value=${score}`)
                 xhr.responseType = 'json'
                 xhr.onload = ({ target }) => {
-                    this.storage[key] = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : null
+                    const value = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : null
+                    this.$set(this.storage, key, value)
                 }
                 xhr.send()
             }
@@ -294,7 +301,6 @@ export default {
             this.worm = Array(3).fill().map((_u, n) => [5, n])
             this.apple = [5, 5]
             this.updateCanvas()
-            this.updateCount('games')
             Object.keys(this.icons).forEach(s => this.getHighscore(s))
         }
     }
