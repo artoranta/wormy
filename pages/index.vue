@@ -158,6 +158,7 @@ export default {
                 if (this.worm.map(wxy => wxy.join('.')).slice(1).includes(next.join('.')) || this.length === this.size * this.size) {
                     this.state = 2
                 } else {
+                    this.moveHead(this.head, next)
                     this.worm.push(next)
                     if (this.head.join('.') === this.apple.join('.')) {
                         this.score++
@@ -165,40 +166,52 @@ export default {
                         while (this.worm.map(wxy => wxy.join('.')).includes(random.join('.'))) {
                             random = this.generate()
                         }
+                        this.removePart(this.apple)
                         this.apple = random
+                        this.addPart(...this.apple, '#cb2724')
                     } else {
+                        this.removePart(...this.worm[0])
                         this.worm.shift()
                     }
                 }
                 if (Math.abs(this.dir - this.nextDir) !== 2) {
                     this.dir = this.nextDir
                 }
-                this.updateCanvas()
+                // this.updateCanvas()
             }, 1000 / this.speed)
         },
         focusInput () {
             this.$refs.controlInput.focus()
         },
+        removePart (y, x) {
+            this.vueCanvas.clearRect(x * 36, y * 36, 36, 36)
+        },
+        addPart (y, x, color = '#22a417', w = 36, h = 36) {
+            this.vueCanvas.beginPath()
+            this.vueCanvas.fillStyle = color
+            this.vueCanvas.fillRect(x * 36, y * 36, w, h)
+        },
+        moveHead (oldHead, newHead) {
+            // Head.
+            this.removePart(...oldHead)
+            this.addPart(...oldHead)
+            this.addPart(...newHead)
+            // Eyes.
+            this.addPart(newHead[0] + 6 / 36, newHead[1] + 13 / 36, '#b3d9aa', 2, 10)
+            this.addPart(newHead[0] + 6 / 36, newHead[1] + 21 / 36, '#b3d9aa', 2, 10)
+        },
         updateCanvas () {
             this.vueCanvas.clearRect(0, 0, 360, 360)
 
             this.worm.forEach(([y, x]) => {
-                this.vueCanvas.beginPath()
-                this.vueCanvas.fillStyle = '#22a417'
-                this.vueCanvas.fillRect(x * 36, y * 36, 36, 36)
+                this.addPart(y, x)
                 if (x === this.head[1] && y === this.head[0]) {
-                    this.vueCanvas.beginPath()
-                    this.vueCanvas.fillStyle = '#b3d9aa'
-                    this.vueCanvas.fillRect(x * 36 + 13, y * 36 + 6, 2, 10)
-                    this.vueCanvas.beginPath()
-                    this.vueCanvas.fillStyle = '#b3d9aa'
-                    this.vueCanvas.fillRect(x * 36 + 21, y * 36 + 6, 2, 10)
+                    this.addPart(y + 6 / 36, x + 13 / 36, '#b3d9aa', 2, 10)
+                    this.addPart(y + 6 / 36, x + 21 / 36, '#b3d9aa', 2, 10)
                 }
             })
 
-            this.vueCanvas.beginPath()
-            this.vueCanvas.fillStyle = '#cb2724'
-            this.vueCanvas.fillRect(this.apple[1] * 36, this.apple[0] * 36, 36, 36)
+            this.addPart(...this.apple, '#cb2724')
         },
         setDir ({ keyCode }) {
             if ((keyCode < 37 && keyCode > 40) || this.state === 2) {
