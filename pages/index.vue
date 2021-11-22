@@ -180,8 +180,8 @@ export default {
         focusInput () {
             this.$refs.controlInput.focus()
         },
-        removePart ([y, x], w = 36, h = 35) {
-            this.vueCanvas.clearRect(x * 36, y * 36, 36, 36)
+        removePart ([y, x], w = 36, h = 36) {
+            this.vueCanvas.clearRect(x * 36, y * 36, w, h)
         },
         addPart ([y, x], color = '#22a417', w = 36, h = 36) {
             this.vueCanvas.beginPath()
