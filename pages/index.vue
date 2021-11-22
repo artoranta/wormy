@@ -84,6 +84,7 @@
 <script>
 const namespace = 'wormy.dev'
 const size = 10
+const pixels = 36
 
 export default {
     layout: 'default',
@@ -121,8 +122,10 @@ export default {
         }
     },
     watch: {
-        apple () {
-            this.addPart(this.apple, '#cb2724')
+        apple (value) {
+            if (value.join('.') !== [size + 1, size + 1].join('.')) {
+                this.addPart(this.apple, '#cb2724')
+            }
         },
         state (value) {
             if (value === 1) {
@@ -173,7 +176,7 @@ export default {
                 default:
                     next = [this.head[0], (this.head[1] + 1) % size]
                 }
-                if (this.worm.map(wxy => wxy.join('.')).slice(1).includes(next.join('.')) || this.length === size * size) {
+                if (this.worm.map(wxy => wxy.join('.')).slice(1).includes(next.join('.'))) {
                     this.state = 2
                     this.saveScore(this.speed, this.score)
                 } else {
@@ -181,11 +184,18 @@ export default {
                     this.worm.push(next)
                     if (this.head.join('.') === this.apple.join('.')) {
                         this.score++
-                        let random = this.generate()
-                        while (this.worm.map(wxy => wxy.join('.')).includes(random.join('.'))) {
-                            random = this.generate()
+                        if (this.length !== size * size) {
+                            let random = this.generate()
+                            while (this.worm.map(wxy => wxy.join('.')).includes(random.join('.'))) {
+                                random = this.generate()
+                            }
+                            this.apple = random
+                        } else {
+                            // No more space for apple.
+                            this.apple = [size + 1, size + 1]
+                            this.state = 2
+                            this.win()
                         }
-                        this.apple = random
                     } else {
                         if (this.head.join('.') !== this.worm[0].join('.')) {
                             this.removePart(this.worm[0])
@@ -248,13 +258,41 @@ export default {
         focusInput () {
             this.$refs.controlInput.focus()
         },
-        removePart ([y, x], w = 36, h = 36) {
-            this.vueCanvas.clearRect(x * 36, y * 36, w, h)
+        win () {
+            for (let i = 0; i < this.worm.length; i++) {
+                this.addPart(this.worm[i])
+                setTimeout(() => {
+                    this.removePart(this.worm[i], pixels, pixels)
+                }, 20 * i)
+                setTimeout(() => {
+                    this.addPart(this.worm[i], '#cb2724')
+                }, 2000 + 20 * i)
+                setTimeout(() => {
+                    this.removePart(this.worm[i], pixels, pixels)
+                }, 4000 + 20 * i)
+            }
+
+            const egdes = [[0, 0], [0, 1], [0, 8], [0, 9], [1, 0], [1, 9], [8, 0], [8, 9], [9, 0], [9, 1], [9, 8], [9, 9]]
+            const smile = [[1, 3], [1, 6], [2, 3], [2, 6], [3, 3], [3, 6], [4, 3], [4, 6], [6, 1], [6, 8], [7, 2], [7, 7], [8, 3], [8, 4], [8, 5], [8, 6]]
+
+            for (let i = 0; i < this.worm.length; i++) {
+                setTimeout(() => {
+                    if (!egdes.map(yx => yx.join('.')).includes(this.worm[i].join('.'))) {
+                        this.addPart(this.worm[i], '#eeda1c')
+                    }
+                    if (smile.map(yx => yx.join('.')).includes(this.worm[i].join('.'))) {
+                        this.addPart(this.worm[i], '#000000')
+                    }
+                }, 4000 + 20 * i)
+            }
         },
-        addPart ([y, x], color = '#22a417', w = 36, h = 36) {
+        removePart ([y, x], w = pixels, h = pixels) {
+            this.vueCanvas.clearRect(x * pixels, y * pixels, w, h)
+        },
+        addPart ([y, x], color = '#22a417', w = pixels, h = pixels) {
             this.vueCanvas.beginPath()
             this.vueCanvas.fillStyle = color
-            this.vueCanvas.fillRect(x * 36, y * 36, w, h)
+            this.vueCanvas.fillRect(x * pixels, y * pixels, w, h)
         },
         moveHead (oldHead, newHead) {
             // Head.
@@ -262,17 +300,17 @@ export default {
             this.addPart(oldHead)
             this.addPart(newHead)
             // Eyes.
-            this.addPart([newHead[0] + 6 / 36, newHead[1] + 13 / 36], '#b3d9aa', 2, 10)
-            this.addPart([newHead[0] + 6 / 36, newHead[1] + 21 / 36], '#b3d9aa', 2, 10)
+            this.addPart([newHead[0] + 6 / pixels, newHead[1] + 13 / pixels], '#b3d9aa', 2, 10)
+            this.addPart([newHead[0] + 6 / pixels, newHead[1] + 21 / pixels], '#b3d9aa', 2, 10)
         },
         updateCanvas () {
-            this.removePart([0, 0], 360, 360)
+            this.removePart([0, 0], pixels * size, pixels * size)
             this.addPart(this.apple, '#cb2724')
             this.worm.forEach(([y, x]) => {
                 this.addPart([y, x])
                 if (x === this.head[1] && y === this.head[0]) {
-                    this.addPart([y + 6 / 36, x + 13 / 36], '#b3d9aa', 2, 10)
-                    this.addPart([y + 6 / 36, x + 21 / 36], '#b3d9aa', 2, 10)
+                    this.addPart([y + 6 / pixels, x + 13 / pixels], '#b3d9aa', 2, 10)
+                    this.addPart([y + 6 / pixels, x + 21 / pixels], '#b3d9aa', 2, 10)
                 }
             })
         },
