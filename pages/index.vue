@@ -1,5 +1,13 @@
 <template>
     <div class="grid-container">
+        <div class="stat-header">
+            <div class="game-count">
+                {{ storage.games ? storage.games : 0 }}
+            </div>
+            <div class="highscores">
+                {{ Object.keys(icons).map(s => storage['highscore-' + s] || 0) }}
+            </div>
+        </div>
         <div class="game-header">
             <a-button :disabled="state !== 2" class="reset-button" @click="restart">
                 New Game
@@ -13,7 +21,7 @@
                 v-model="speed"
                 class="speed-radio"
                 button-style="solid"
-                @change="move"
+                @change="start"
             >
                 <a-radio-button :value="5" :disabled="state !== 0 && speed !== 5">
                     <a-icon :type="icons[5]" />
@@ -98,7 +106,8 @@ export default {
                 5: 'bug',
                 7: 'car',
                 10: 'rocket'
-            }
+            },
+            storage: {}
         }
     },
     computed: {
@@ -121,14 +130,16 @@ export default {
         this.vueCanvas = ctx
     },
     created () {
-        // this.move()
         this.$nextTick(() => {
             this.updateCanvas()
-            this.move()
+            this.updateCount('visits')
+            Object.keys(this.icons).forEach(s => this.getHighscore(s))
+            this.start()
+            this.updateCount('games')
         })
     },
     methods: {
-        move () {
+        start () {
             clearInterval(this.interval)
             this.interval = setInterval(() => {
                 if (this.state !== 1) {
@@ -157,6 +168,7 @@ export default {
                 }
                 if (this.worm.map(wxy => wxy.join('.')).slice(1).includes(next.join('.')) || this.length === this.size * this.size) {
                     this.state = 2
+                    this.saveScore(this.speed, this.score)
                 } else {
                     this.moveHead(this.head, next)
                     this.worm.push(next)
@@ -178,6 +190,50 @@ export default {
                     this.dir = this.nextDir
                 }
             }, 1000 / this.speed)
+        },
+        updateCount (key) {
+            const xhr = new XMLHttpRequest()
+            xhr.open('GET', `https://api.countapi.xyz/hit/wormy.dev/${key}`)
+            xhr.responseType = 'json'
+            xhr.onload = ({ target }) => {
+                this.storage[key] = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : 0
+            }
+            xhr.send()
+        },
+        getHighscore (speed) {
+            const xhr = new XMLHttpRequest()
+            const key = `highscore-${speed}`
+            xhr.open('GET', `https://api.countapi.xyz/get/wormy.dev/${key}`)
+            xhr.responseType = 'json'
+            xhr.onload = ({ target }) => {
+                this.storage[key] = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : null
+                if (!this.storage[key] && this.storage[key] !== 0) {
+                    this.create(key)
+                }
+            }
+            xhr.send()
+        },
+        saveScore (speed, score) {
+            const key = `highscore-${speed}`
+            const currentValue = this.storage[key] || 0
+            if (score > currentValue) {
+                const xhr = new XMLHttpRequest()
+                xhr.open('GET', `https://api.countapi.xyz/set/wormy.dev/${key}?value=${score}`)
+                xhr.responseType = 'json'
+                xhr.onload = ({ target }) => {
+                    this.storage[key] = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : null
+                }
+                xhr.send()
+            }
+        },
+        create (key) {
+            const xhr = new XMLHttpRequest()
+            xhr.open('GET', `https://api.countapi.xyz/create?namespace=wormy.dev&key=${key}&value=0&enable_reset=1`)
+            xhr.responseType = 'json'
+            xhr.onload = ({ target }) => {
+                console.log(target.response)
+            }
+            xhr.send()
         },
         focusInput () {
             this.$refs.controlInput.focus()
@@ -238,6 +294,8 @@ export default {
             this.worm = Array(3).fill().map((_u, n) => [5, n])
             this.apple = [5, 5]
             this.updateCanvas()
+            this.updateCount('games')
+            Object.keys(this.icons).forEach(s => this.getHighscore(s))
         }
     }
 }
@@ -315,6 +373,15 @@ export default {
         display: flex;
         flex-direction: row;
         margin-bottom: 5px;
+    }
+
+    .stat-header {
+        width: 360px;
+        justify-content: space-between;
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+        margin-top: 5px;
     }
 
     .reset-button {
