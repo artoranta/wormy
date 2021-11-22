@@ -168,7 +168,9 @@ export default {
                         }
                         this.apple = random
                     } else {
-                        this.removePart(this.worm[0])
+                        if (this.head.join('.') !== this.worm[0].join('.')) {
+                            this.removePart(this.worm[0])
+                        }
                         this.worm.shift()
                     }
                 }
