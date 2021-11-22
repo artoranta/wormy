@@ -110,8 +110,8 @@ export default {
         }
     },
     watch: {
-        apple (val) {
-            this.fullName = val + ' ' + this.lastName
+        apple () {
+            this.addPart(this.apple, '#cb2724')
         }
     },
     mounted () {
@@ -166,52 +166,47 @@ export default {
                         while (this.worm.map(wxy => wxy.join('.')).includes(random.join('.'))) {
                             random = this.generate()
                         }
-                        this.removePart(this.apple)
                         this.apple = random
-                        this.addPart(...this.apple, '#cb2724')
                     } else {
-                        this.removePart(...this.worm[0])
+                        this.removePart(this.worm[0])
                         this.worm.shift()
                     }
                 }
                 if (Math.abs(this.dir - this.nextDir) !== 2) {
                     this.dir = this.nextDir
                 }
-                // this.updateCanvas()
             }, 1000 / this.speed)
         },
         focusInput () {
             this.$refs.controlInput.focus()
         },
-        removePart (y, x) {
+        removePart ([y, x], w = 36, h = 35) {
             this.vueCanvas.clearRect(x * 36, y * 36, 36, 36)
         },
-        addPart (y, x, color = '#22a417', w = 36, h = 36) {
+        addPart ([y, x], color = '#22a417', w = 36, h = 36) {
             this.vueCanvas.beginPath()
             this.vueCanvas.fillStyle = color
             this.vueCanvas.fillRect(x * 36, y * 36, w, h)
         },
         moveHead (oldHead, newHead) {
             // Head.
-            this.removePart(...oldHead)
-            this.addPart(...oldHead)
-            this.addPart(...newHead)
+            this.removePart(oldHead)
+            this.addPart(oldHead)
+            this.addPart(newHead)
             // Eyes.
-            this.addPart(newHead[0] + 6 / 36, newHead[1] + 13 / 36, '#b3d9aa', 2, 10)
-            this.addPart(newHead[0] + 6 / 36, newHead[1] + 21 / 36, '#b3d9aa', 2, 10)
+            this.addPart([newHead[0] + 6 / 36, newHead[1] + 13 / 36], '#b3d9aa', 2, 10)
+            this.addPart([newHead[0] + 6 / 36, newHead[1] + 21 / 36], '#b3d9aa', 2, 10)
         },
         updateCanvas () {
-            this.vueCanvas.clearRect(0, 0, 360, 360)
-
+            this.removePart([0, 0], 360, 360)
+            this.addPart(this.apple, '#cb2724')
             this.worm.forEach(([y, x]) => {
-                this.addPart(y, x)
+                this.addPart([y, x])
                 if (x === this.head[1] && y === this.head[0]) {
-                    this.addPart(y + 6 / 36, x + 13 / 36, '#b3d9aa', 2, 10)
-                    this.addPart(y + 6 / 36, x + 21 / 36, '#b3d9aa', 2, 10)
+                    this.addPart([y + 6 / 36, x + 13 / 36], '#b3d9aa', 2, 10)
+                    this.addPart([y + 6 / 36, x + 21 / 36], '#b3d9aa', 2, 10)
                 }
             })
-
-            this.addPart(...this.apple, '#cb2724')
         },
         setDir ({ keyCode }) {
             if ((keyCode < 37 && keyCode > 40) || this.state === 2) {
