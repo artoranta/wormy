@@ -194,6 +194,7 @@ export default {
                             // No more space for apple.
                             this.apple = [size + 1, size + 1]
                             this.state = 2
+                            this.saveScore(this.speed, this.score)
                             this.win()
                         }
                     } else {
