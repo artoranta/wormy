@@ -2,15 +2,23 @@
     <div class="grid-container">
         <div class="stat-header">
             <div class="game-count">
-                {{ storage.games ? storage.games : 0 }}
+                <!--{{ storage.games ? storage.games : 0 }}-->
+                <a-slider
+                    v-model="size"
+                    style="width: 125px;"
+                    :min="10"
+                    :max="20"
+                    :step="5"
+                    :marks="marks"
+                />
             </div>
             <div class="highscores">
-                {{ Object.keys(icons).map(s => storage['highscore-' + s] || 0) }}
+                {{ Object.keys(icons).map(s => storage['highscore-' + size + '-' + s] || 0) }}
             </div>
         </div>
         <div class="game-header">
-            <a-button :disabled="state !== 2" class="reset-button" @click="restart">
-                New Game
+            <a-button :disabled="state === 0" class="reset-button" @click="restart">
+                {{ state !== 2 ? 'Reset' : 'New Game' }}
             </a-button>
             <div class="score-container">
                 <h1 style="color: #47494E; margin-bottom: 0;">
@@ -35,8 +43,8 @@
             </a-radio-group>
         </div>
         <div class="grid">
-            <div v-for="x in 10" :key="x" class="row">
-                <div v-for="y in 10" :key="y" class="tile" />
+            <div v-for="x in size" :key="x" class="row">
+                <div v-for="y in size" :key="y" class="tile" />
             </div>
             <!--<div v-for="y in grid" :key="y[0].join('.')" class="row">
                 <div v-for="xy in y" :key="xy.join('.')" class="tile">
@@ -83,20 +91,14 @@
 
 <script>
 const namespace = 'wormy.dev'
-const size = 10
-const pixels = 36
 
 export default {
     layout: 'default',
     data () {
         return {
-            grid: Array(size)
-                .fill()
-                .map((_u, y) => Array(size)
-                    .fill()
-                    .map((_u, x) => [y, x])),
-            worm: Array(3).fill().map((_u, n) => [5, n]),
+            /* grid: this.getGrid(), */
             /* left | top | right | bottom */
+            worm: Array(3).fill().map((_u, n) => [5, n]),
             dir: 1,
             speed: 7,
             apple: [5, 5],
@@ -110,7 +112,13 @@ export default {
                 7: 'car',
                 10: 'rocket'
             },
-            storage: {}
+            storage: {},
+            size: 10,
+            marks: {
+                10: '10x10',
+                15: '15x15',
+                20: '20x20'
+            }
         }
     },
     computed: {
@@ -119,11 +127,14 @@ export default {
         },
         length () {
             return this.worm.length
+        },
+        pixels () {
+            return 360 / this.size
         }
     },
     watch: {
         apple (value) {
-            if (value.join('.') !== [size + 1, size + 1].join('.')) {
+            if (value.join('.') !== [this.size + 1, this.size + 1].join('.')) {
                 this.addPart(this.apple, '#cb2724')
             }
         },
@@ -131,6 +142,9 @@ export default {
             if (value === 1) {
                 this.count('games')
             }
+        },
+        size () {
+            this.restart()
         }
     },
     mounted () {
@@ -144,11 +158,20 @@ export default {
             this.count('games', 'get')
             this.count('visits')
             this.updateCanvas()
-            Object.keys(this.icons).forEach(s => this.getHighscore(s))
+            Object.keys(this.icons).forEach(s => this.getHighscore(this.size, s))
             this.start()
         })
     },
     methods: {
+        /*
+        getGrid () {
+            return Array(this.size)
+                .fill()
+                .map((_u, y) => Array(this.size)
+                    .fill()
+                    .map((_u, x) => [y, x]))
+        },
+         */
         start () {
             clearInterval(this.interval)
             this.interval = setInterval(() => {
@@ -159,32 +182,32 @@ export default {
                 switch (this.dir) {
                 case 0:
                     this.lastDir = 0
-                    next = [this.head[0], (this.head[1] + (size - 1)) % size]
+                    next = [this.head[0], (this.head[1] + (this.size - 1)) % this.size]
                     break
                 case 1:
                     this.lastDir = 1
-                    next = [(this.head[0] + (size - 1)) % size, this.head[1]]
+                    next = [(this.head[0] + (this.size - 1)) % this.size, this.head[1]]
                     break
                 case 2:
                     this.lastDir = 2
-                    next = [this.head[0], (this.head[1] + 1) % size]
+                    next = [this.head[0], (this.head[1] + 1) % this.size]
                     break
                 case 3:
                     this.lastDir = 3
-                    next = [(this.head[0] + 1) % size, this.head[1]]
+                    next = [(this.head[0] + 1) % this.size, this.head[1]]
                     break
                 default:
-                    next = [this.head[0], (this.head[1] + 1) % size]
+                    next = [this.head[0], (this.head[1] + 1) % this.size]
                 }
                 if (this.worm.map(wxy => wxy.join('.')).slice(1).includes(next.join('.'))) {
                     this.state = 2
-                    this.saveScore(this.speed, this.score)
+                    this.saveScore(this.size, this.speed, this.score)
                 } else {
                     this.moveHead(this.head, next)
                     this.worm.push(next)
                     if (this.head.join('.') === this.apple.join('.')) {
                         this.score++
-                        if (this.length !== size * size) {
+                        if (this.length !== this.size * this.size) {
                             let random = this.generate()
                             while (this.worm.map(wxy => wxy.join('.')).includes(random.join('.'))) {
                                 random = this.generate()
@@ -192,9 +215,9 @@ export default {
                             this.apple = random
                         } else {
                             // No more space for apple.
-                            this.apple = [size + 1, size + 1]
+                            this.apple = [this.size + 1, this.size + 1]
                             this.state = 2
-                            this.saveScore(this.speed, this.score)
+                            this.saveScore(this.size, this.speed, this.score)
                             this.win()
                         }
                     } else {
@@ -219,9 +242,9 @@ export default {
             }
             xhr.send()
         },
-        getHighscore (speed) {
+        getHighscore (size, speed) {
             const xhr = new XMLHttpRequest()
-            const key = `highscore-${speed}`
+            const key = `highscore-${size}-${speed}`
             xhr.open('GET', `https://api.countapi.xyz/get/${namespace}/${key}`)
             xhr.responseType = 'json'
             xhr.onload = ({ target }) => {
@@ -233,8 +256,8 @@ export default {
             }
             xhr.send()
         },
-        saveScore (speed, score) {
-            const key = `highscore-${speed}`
+        saveScore (size, speed, score) {
+            const key = `highscore-${size}-${speed}`
             const currentValue = this.storage[key] || 0
             if (score > currentValue) {
                 const xhr = new XMLHttpRequest()
@@ -263,13 +286,13 @@ export default {
             for (let i = 0; i < this.worm.length; i++) {
                 this.addPart(this.worm[i])
                 setTimeout(() => {
-                    this.removePart(this.worm[i], pixels, pixels)
+                    this.removePart(this.worm[i], this.pixels, this.pixels)
                 }, 20 * i)
                 setTimeout(() => {
                     this.addPart(this.worm[i], '#cb2724')
                 }, 2000 + 20 * i)
                 setTimeout(() => {
-                    this.removePart(this.worm[i], pixels, pixels)
+                    this.removePart(this.worm[i], this.pixels, this.pixels)
                 }, 4000 + 20 * i)
             }
 
@@ -287,31 +310,35 @@ export default {
                 }, 4000 + 20 * i)
             }
         },
-        removePart ([y, x], w = pixels, h = pixels) {
-            this.vueCanvas.clearRect(x * pixels, y * pixels, w, h)
+        removePart ([y, x], w = this.pixels, h = this.pixels) {
+            this.vueCanvas.clearRect(x * this.pixels, y * this.pixels, w, h)
         },
-        addPart ([y, x], color = '#22a417', w = pixels, h = pixels) {
+        addPart ([y, x], color = '#22a417', w = this.pixels, h = this.pixels) {
             this.vueCanvas.beginPath()
             this.vueCanvas.fillStyle = color
-            this.vueCanvas.fillRect(x * pixels, y * pixels, w, h)
+            this.vueCanvas.fillRect(x * this.pixels, y * this.pixels, w, h)
+        },
+        drawEyes ([y, x]) {
+            this.addPart([y + 1 / 6, x + 13 / 36], '#b3d9aa', this.pixels / 18, this.pixels / 3.6)
+            this.addPart([y + 1 / 6, x + 21 / 36], '#b3d9aa', this.pixels / 18, this.pixels / 3.6)
+            /*
+            this.addPart([y + 6 / this.pixels, x + 13 / this.pixels], '#b3d9aa', 2, 10)
+            this.addPart([y + 6 / this.pixels, x + 21 / this.pixels], '#b3d9aa', 2, 10)
+             */
         },
         moveHead (oldHead, newHead) {
-            // Head.
             this.removePart(oldHead)
             this.addPart(oldHead)
             this.addPart(newHead)
-            // Eyes.
-            this.addPart([newHead[0] + 6 / pixels, newHead[1] + 13 / pixels], '#b3d9aa', 2, 10)
-            this.addPart([newHead[0] + 6 / pixels, newHead[1] + 21 / pixels], '#b3d9aa', 2, 10)
+            this.drawEyes(newHead)
         },
         updateCanvas () {
-            this.removePart([0, 0], pixels * size, pixels * size)
+            this.removePart([0, 0], this.pixels * this.size, this.pixels * this.size)
             this.addPart(this.apple, '#cb2724')
             this.worm.forEach(([y, x]) => {
                 this.addPart([y, x])
                 if (x === this.head[1] && y === this.head[0]) {
-                    this.addPart([y + 6 / pixels, x + 13 / pixels], '#b3d9aa', 2, 10)
-                    this.addPart([y + 6 / pixels, x + 21 / pixels], '#b3d9aa', 2, 10)
+                    this.drawEyes([y, x])
                 }
             })
         },
@@ -332,7 +359,7 @@ export default {
             }
         },
         generate () {
-            return [Math.floor(Math.random() * size), Math.floor(Math.random() * size)]
+            return [Math.floor(Math.random() * this.size), Math.floor(Math.random() * this.size)]
         },
         restart () {
             this.state = 0
@@ -343,7 +370,7 @@ export default {
             this.worm = Array(3).fill().map((_u, n) => [5, n])
             this.apple = [5, 5]
             this.updateCanvas()
-            Object.keys(this.icons).forEach(s => this.getHighscore(s))
+            Object.keys(this.icons).forEach(s => this.getHighscore(this.size, s))
         }
     }
 }
