@@ -5,6 +5,7 @@
                 <!--{{ storage.games ? storage.games : 0 }}-->
                 <a-slider
                     v-model="size"
+                    :disabled="state !== 0"
                     style="width: 125px;"
                     :min="10"
                     :max="20"
@@ -283,31 +284,34 @@ export default {
             this.$refs.controlInput.focus()
         },
         win () {
+            const factor = this.size / 10
+            const square = this.worm.filter(([y, x]) => y < 10 && x < 10)
+
             for (let i = 0; i < this.worm.length; i++) {
                 this.addPart(this.worm[i])
                 setTimeout(() => {
                     this.removePart(this.worm[i], this.pixels, this.pixels)
-                }, 20 * i)
+                }, 20 / factor * i)
                 setTimeout(() => {
                     this.addPart(this.worm[i], '#cb2724')
-                }, 2000 + 20 * i)
+                }, 2000 + 20 / factor * i)
                 setTimeout(() => {
                     this.removePart(this.worm[i], this.pixels, this.pixels)
-                }, 4000 + 20 * i)
+                }, 4500 + 20 / factor * i)
             }
 
             const egdes = [[0, 0], [0, 1], [0, 8], [0, 9], [1, 0], [1, 9], [8, 0], [8, 9], [9, 0], [9, 1], [9, 8], [9, 9]]
             const smile = [[1, 3], [1, 6], [2, 3], [2, 6], [3, 3], [3, 6], [4, 3], [4, 6], [6, 1], [6, 8], [7, 2], [7, 7], [8, 3], [8, 4], [8, 5], [8, 6]]
 
-            for (let i = 0; i < this.worm.length; i++) {
+            for (let i = 0; i < square.length; i++) {
                 setTimeout(() => {
-                    if (!egdes.map(yx => yx.join('.')).includes(this.worm[i].join('.'))) {
-                        this.addPart(this.worm[i], '#eeda1c')
+                    if (!egdes.map(yx => yx.join('.')).includes(square[i].join('.'))) {
+                        this.addPart(square[i].map(c => factor * c), '#eeda1c', this.pixels * factor, this.pixels * factor)
                     }
-                    if (smile.map(yx => yx.join('.')).includes(this.worm[i].join('.'))) {
-                        this.addPart(this.worm[i], '#000000')
+                    if (smile.map(yx => yx.join('.')).includes(square[i].join('.'))) {
+                        this.addPart(square[i].map(c => factor * c), '#000000', this.pixels * factor, this.pixels * factor)
                     }
-                }, 4000 + 20 * i)
+                }, 6000 + 30 * i)
             }
         },
         removePart ([y, x], w = this.pixels, h = this.pixels) {
@@ -321,10 +325,6 @@ export default {
         drawEyes ([y, x]) {
             this.addPart([y + 1 / 6, x + 13 / 36], '#b3d9aa', this.pixels / 18, this.pixels / 3.6)
             this.addPart([y + 1 / 6, x + 21 / 36], '#b3d9aa', this.pixels / 18, this.pixels / 3.6)
-            /*
-            this.addPart([y + 6 / this.pixels, x + 13 / this.pixels], '#b3d9aa', 2, 10)
-            this.addPart([y + 6 / this.pixels, x + 21 / this.pixels], '#b3d9aa', 2, 10)
-             */
         },
         moveHead (oldHead, newHead) {
             this.removePart(oldHead)
