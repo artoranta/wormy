@@ -114,7 +114,7 @@ export default {
                 10: 'rocket'
             },
             storage: {},
-            size: 10,
+            size: 15,
             marks: {
                 10: '10x10',
                 15: '15x15',
