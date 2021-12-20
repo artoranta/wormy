@@ -14,7 +14,13 @@
                 />
             </div>
             <div class="highscores">
-                {{ Object.keys(icons).map(s => storage['highscore-' + size + '-' + s] || 0) }}
+                <div class="highscores">
+                    <b>Highscore</b>
+                </div>
+                <div style="text-align: right;">
+                    {{ (Object.keys(icons).filter(i => i === speed.toString()).map(s => storage['highscore-' + size + '-' + s + '-name'] || '')[0] || '_ _ _ _ _ ') + ':' }}
+                    {{ Object.keys(icons).filter(i => i === speed.toString()).map(s => storage['highscore-' + size + '-' + s] || 0)[0] }}
+                </div>
             </div>
         </div>
         <div class="game-header">
@@ -243,6 +249,28 @@ export default {
             }
             xhr.send()
         },
+        getName (prefix) {
+            const xhr = new XMLHttpRequest()
+            const key = `${prefix}-name`
+            xhr.open('GET', `https://api.countapi.xyz/get/${namespace}/${key}`)
+            xhr.responseType = 'json'
+            xhr.onload = ({ target }) => {
+                const value = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : 0
+                let hexValue = ''
+                let result = null
+                if (value) {
+                    hexValue = BigInt(value).toString(16)
+                    result = Buffer.from(hexValue, 'hex').toString()
+                } else if (value === 0) {
+                    result = 0
+                }
+                this.$set(this.storage, key, result)
+                if (!this.storage[key] && this.storage[key] !== 0) {
+                    this.create(key)
+                }
+            }
+            xhr.send()
+        },
         getHighscore (size, speed) {
             const xhr = new XMLHttpRequest()
             const key = `highscore-${size}-${speed}`
@@ -256,11 +284,39 @@ export default {
                 }
             }
             xhr.send()
+            this.getName(key)
+        },
+        saveName (prefix, name = '') {
+            const xhr = new XMLHttpRequest()
+            const key = `${prefix}-name`
+            let hexValue = Buffer.from((name || '').slice(0, 1)).toString('hex')
+            let intValue = BigInt('0x' + hexValue)
+            let length = 1
+            let result
+            while (true) {
+                length++
+                hexValue = Buffer.from((name || '').slice(0, length)).toString('hex')
+                intValue = BigInt('0x' + hexValue)
+                if (intValue <= 99999999999999 && length < 10) {
+                    result = intValue.toString()
+                } else {
+                    break
+                }
+            }
+            xhr.open('GET', `https://api.countapi.xyz/set/${namespace}/${key}?value=${result}`)
+            xhr.responseType = 'json'
+            xhr.onload = ({ target }) => {
+                const value = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : 0
+                const hexValue = (value || '').toString(16)
+                this.$set(this.storage, key, Buffer.from(hexValue, 'hex').toString())
+            }
+            xhr.send()
         },
         saveScore (size, speed, score) {
             const key = `highscore-${size}-${speed}`
             const currentValue = this.storage[key] || 0
             if (score > currentValue) {
+                const name = prompt('Please enter your name', '')
                 const xhr = new XMLHttpRequest()
                 xhr.open('GET', `https://api.countapi.xyz/set/${namespace}/${key}?value=${score}`)
                 xhr.responseType = 'json'
@@ -269,11 +325,12 @@ export default {
                     this.$set(this.storage, key, value)
                 }
                 xhr.send()
+                this.saveName(key, name)
             }
         },
-        create (key) {
+        create (key, value = 0) {
             const xhr = new XMLHttpRequest()
-            xhr.open('GET', `https://api.countapi.xyz/create?namespace=${namespace}&key=${key}&value=0&enable_reset=1`)
+            xhr.open('GET', `https://api.countapi.xyz/create?namespace=${namespace}&key=${key}&value=${value}&enable_reset=1`)
             xhr.responseType = 'json'
             xhr.onload = ({ target }) => {
                 console.log(target.response)
