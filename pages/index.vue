@@ -315,7 +315,7 @@ export default {
         saveScore (size, speed, score) {
             const key = `highscore-${size}-${speed}`
             const currentValue = this.storage[key] || 0
-            if (score > currentValue) {
+            if (score >= currentValue) {
                 const name = prompt('Please enter your name', '')
                 const xhr = new XMLHttpRequest()
                 xhr.open('GET', `https://api.countapi.xyz/set/${namespace}/${key}?value=${score}`)
