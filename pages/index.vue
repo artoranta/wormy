@@ -224,8 +224,7 @@ export default {
                             // No more space for apple.
                             this.apple = [this.size + 1, this.size + 1]
                             this.state = 2
-                            this.saveScore(this.size, this.speed, this.score)
-                            this.win()
+                            this.saveScore(this.size, this.speed, this.score, true)
                         }
                     } else {
                         if (this.head.join('.') !== this.worm[0].join('.')) {
@@ -312,11 +311,17 @@ export default {
             }
             xhr.send()
         },
-        saveScore (size, speed, score) {
+        saveScore (size, speed, score, win = false) {
             const key = `highscore-${size}-${speed}`
             const currentValue = this.storage[key] || 0
+            let name
             if (score >= currentValue) {
-                const name = prompt('Please enter your name', '')
+                name = prompt('Please enter your name', '')
+            }
+            if (win) {
+                this.win()
+            }
+            if (score >= currentValue) {
                 const xhr = new XMLHttpRequest()
                 xhr.open('GET', `https://api.countapi.xyz/set/${namespace}/${key}?value=${score}`)
                 xhr.responseType = 'json'
