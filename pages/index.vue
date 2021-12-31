@@ -74,7 +74,7 @@
                 onblur="this.focus()"
                 autofocus
                 inputmode="none"
-                @keyup="setDir($event)"
+                @keydown="setDir($event)"
             >
         </div>
         <div class="control-buttons">
