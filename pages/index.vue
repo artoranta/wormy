@@ -405,6 +405,7 @@ export default {
             })
         },
         setDir ({ keyCode }) {
+            this.$refs.controlInput.value = ''
             if ((keyCode < 37 && keyCode > 40) || this.state === 2) {
                 return
             }
