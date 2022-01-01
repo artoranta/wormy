@@ -270,7 +270,7 @@ export default {
             }
             xhr.send()
         },
-        getHighscore (size, speed) {
+        getHighscore (size, speed, cb) {
             const xhr = new XMLHttpRequest()
             const key = `highscore-${size}-${speed}`
             xhr.open('GET', `https://api.countapi.xyz/get/${namespace}/${key}`)
@@ -280,6 +280,9 @@ export default {
                 this.$set(this.storage, key, value)
                 if (!this.storage[key] && this.storage[key] !== 0) {
                     this.create(key)
+                }
+                if (cb) {
+                    cb()
                 }
             }
             xhr.send()
@@ -312,26 +315,28 @@ export default {
             xhr.send()
         },
         saveScore (size, speed, score, win = false) {
-            const key = `highscore-${size}-${speed}`
-            const currentValue = this.storage[key] || 0
-            let name
-            if (score >= currentValue) {
-                name = prompt('Please enter your name', '')
-            }
-            if (win) {
-                this.win()
-            }
-            if (score >= currentValue) {
-                const xhr = new XMLHttpRequest()
-                xhr.open('GET', `https://api.countapi.xyz/set/${namespace}/${key}?value=${score}`)
-                xhr.responseType = 'json'
-                xhr.onload = ({ target }) => {
-                    const value = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : 0
-                    this.$set(this.storage, key, value)
+            this.getHighscore(size, speed, () => {
+                const key = `highscore-${size}-${speed}`
+                const currentValue = this.storage[key] || 0
+                let name
+                if (score >= currentValue) {
+                    name = prompt('Please enter your name', '')
                 }
-                xhr.send()
-                this.saveName(key, name)
-            }
+                if (win) {
+                    this.win()
+                }
+                if (score >= currentValue) {
+                    const xhr = new XMLHttpRequest()
+                    xhr.open('GET', `https://api.countapi.xyz/set/${namespace}/${key}?value=${score}`)
+                    xhr.responseType = 'json'
+                    xhr.onload = ({ target }) => {
+                        const value = Object.hasOwnProperty.call(target.response, 'value') ? target.response.value : 0
+                        this.$set(this.storage, key, value)
+                    }
+                    xhr.send()
+                    this.saveName(key, name)
+                }
+            })
         },
         create (key, value = 0) {
             const xhr = new XMLHttpRequest()
